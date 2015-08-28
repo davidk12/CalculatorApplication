@@ -16,6 +16,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 public class MainActivity extends Activity {
@@ -23,12 +25,16 @@ public class MainActivity extends Activity {
     private TextView m_display;
     private Vibrator m_vibrator;
     private Boolean m_use_vibrator = false;
+
+    List operands;
+
     SharedPreferences m_sp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        operands = new ArrayList();
 
         m_display = (TextView)findViewById( R.id.display );
         m_vibrator = (Vibrator)getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
@@ -70,7 +76,6 @@ public class MainActivity extends Activity {
     public void buttonPressed( View view ) {
         Button buttonView = (Button) view;
         String text = null;
-        // Log.i("Calculator", "Clicked ..");
         switch ( view.getId() ) {
             case R.id.button7:
             case R.id.button8:
@@ -88,16 +93,18 @@ public class MainActivity extends Activity {
                 text = m_display.getText().toString();
                 Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG).show();
 
-                if ( !(text.endsWith("+") || text.endsWith("-"))) {
+                if ( !(text.endsWith("+") || text.endsWith("-") || text.isEmpty())) {
                     m_display.append( buttonView.getText() );
+                    operands.add('+');
                 }
                 break;
             case R.id.buttonMinus:
                 text = m_display.getText().toString();
                 Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG).show();
 
-                if ( !(text.endsWith("+") || text.endsWith("-"))) {
+                if ( !(text.endsWith("+") || text.endsWith("-") || text.isEmpty())) {
                     m_display.append( buttonView.getText() );
+                    operands.add('-');
                 }
                 break;
             case R.id.buttonClear:
@@ -129,13 +136,36 @@ public class MainActivity extends Activity {
         StringTokenizer st = new StringTokenizer( expr, "[+\\-]", true );
         String[] numbers = expr.split("[+\\-]");
 
+        if(numbers.length > 0) {
+            result = Integer.parseInt(numbers[0]);
+        }
+        for(int i = 1; i < numbers.length; i++) {
+            result = operate(result, (char)operands.remove(0), Integer.parseInt(numbers[i]));
+        }
+
+        /*
         while ( st.hasMoreElements()) {
             String token = st.nextToken();
             if((token.equals("+"))) {
                result += Integer.parseInt(numbers[0]) + Integer.parseInt(numbers[1]);
                // numbers =
             }
+        }*/
+        return result.toString();
+    }
+
+    private int operate(int result, char operand, int number) {
+        switch(operand){
+            case '+':
+                result += number;
+                break;
+            case '-':
+                result -= number;
+                break;
+            default:
+                break;
         }
-         return result.toString();
+
+        return result;
     }
 }
